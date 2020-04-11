@@ -1,4 +1,4 @@
- pipeline {
+pipeline {
     agent any
 	
 	environment {
@@ -12,7 +12,17 @@
     stages {
 		stage('Stage_1_Build') {
             steps {
-                dir('web-hello-world') {sh './gradlew clean test'}
+                dir('web-hello-world') {
+					// example of how to change between build slave architectures
+					script {
+					   if (isUnix()) {
+							sh 'echo running on Linux'
+							sh './gradlew clean test'
+						} else {
+							cmd 'echo running on Windows'
+						}
+					}
+				}
             }
             post {
                 always {
@@ -38,11 +48,12 @@
             sendEmail("Failed");
         }
     }
-	
-//	def sendEmail(status) {
-//    mail(
-//		to: "$EMAIL_RECIPIENTS",
-//		subject: "Build $BUILD_NUMBER - " + status + " (${currentBuild.fullDisplayName})",
-//		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: //$BUILD_URL/console" + "\n")
-//	}
 }
+
+def sendEmail(status) {
+    mail(
+		to: "$EMAIL_RECIPIENTS",
+		subject: "Build $BUILD_NUMBER - " + status + " (${currentBuild.fullDisplayName})",
+		body: "Changes:\n " + getChangeString() + "\n\n Check console output at: //$BUILD_URL/console" + "\n")
+}
+	
