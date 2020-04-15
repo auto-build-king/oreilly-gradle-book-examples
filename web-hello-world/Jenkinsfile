@@ -13,13 +13,13 @@ pipeline {
 		stage('Stage_1_Build') {
             steps {
                 dir('web-hello-world') {
-					// example of how to change between build slave architectures
 					script {
 					   if (isUnix()) {
 							sh 'echo running on Linux'
 							sh './gradlew clean test'
 						} else {
-							cmd 'echo running on Windows'
+							bat 'echo running on Windows'
+							bat "./gradlew.bat clean test"
 						}
 					}
 				}
@@ -34,12 +34,21 @@ pipeline {
         }
 		stage('Stage_2_WarFile') {
             steps {
-                dir('web-hello-world') {sh './gradlew war'}
+                dir('web-hello-world') {
+					script {
+					   if (isUnix()) {
+							sh 'echo running on Linux'
+							sh './gradlew war'
+						} else {
+							bat 'echo running on Windows'
+							bat "./gradlew.bat war"
+						}
+					}
+				}
             }
 		}
 	}
-	
-    post {
+	post {
 		always {
             archiveArtifacts artifacts: 'web-hello-world/build/libs/*.war', fingerprint: true
         }
